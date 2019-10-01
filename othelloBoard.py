@@ -115,7 +115,7 @@ class OthelloBoard:
             return None
              
                          
-    def _legalMoves(self,color):
+    def legalMoves(self,color):
         '''To be a legal move, the space must be blank, and you must take at
         least one piece. Note that this method works by attempting to
         move at each possible square, and recording which moves
