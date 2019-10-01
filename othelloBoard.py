@@ -220,7 +220,7 @@ class OthelloBoard:
                         illegalMoves[i] += 1
                     else:
                         curBoard = bcopy
-                        print('Number of heuristic calls = ' + str(move[2]))
+                        print('Number of heuristic calls = ' + str(move[1]))
                 print()
 
                 # To keep code simple, never test for win or loss; if
