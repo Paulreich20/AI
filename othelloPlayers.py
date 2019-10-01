@@ -41,7 +41,7 @@ def heuristic(board) -> int:
     stored on the othello board.'''
 
     # If board is an end game state, don't need heuristic, give scores
-    if not board.legalMoves("black") and not board.legalMoves("white"): ## <------------- CHANGE THIS TO REFLECT ACTUAL COLOR
+    if not board.legalMoves("black") and not board.legalMoves("white"):
         return board.scores()[0]
     else:
         sum = 0
@@ -72,8 +72,8 @@ class ComputerPlayer:
         self.heuristicCalls = 0
         best = 0
         nextMove = (0, 0, 0)
-        if board.legalMoves(self.color):
-            return (0, 0, 0)
+        if not board.legalMoves(self.color):
+            return None
 
         for move in board.legalMoves(self.color):
             bcopy = board.makeMove(move[0], move[1], self.color)

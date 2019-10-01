@@ -199,7 +199,7 @@ class OthelloBoard:
 
                     passes += 1
                     print(colorNames[i] + ' passes.')
-                    legalMoves=curBoard._legalMoves(colorValues[i])
+                    legalMoves= curBoard.legalMoves(colorValues[i])
                     if legalMoves != []:
                         print(colorNames[i] + \
                               ' passed, but there was a legal move.')
