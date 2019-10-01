@@ -41,8 +41,8 @@ def heuristic(board) -> int:
     stored on the othello board.'''
 
     # If board is an end game state, don't need heuristic, give scores
-    if not board.legalMoves("black"): ## <------------- CHANGE THIS TO REFLECT ACTUAL COLOR
-        return board.scores()
+    if not board.legalMoves("black") and not board.legalMoves("white"): ## <------------- CHANGE THIS TO REFLECT ACTUAL COLOR
+        return board.scores()[0]
     else:
         sum = 0
         for i in range(1,othelloBoard.size-1):
@@ -60,6 +60,7 @@ class ComputerPlayer:
         self.color = color
         self.heuristic = heuristic
         self.plies = plies
+        self.heuristicCalls = 0
 
 
     # chooseMove should return a tuple that looks like:
@@ -68,31 +69,36 @@ class ComputerPlayer:
     def chooseMove(self,board) -> Optional[Tuple[int,int,int]]:
         '''This very silly player just returns the first legal move
         that it finds.'''
-        numHeuristicCalls = 0
+        self.heuristicCalls = 0
         best = 0
-        nextMove = [0,0,0]
-        ply = self.plies*2
+        nextMove = (0, 0, 0)
+        if board.legalMoves(self.color):
+            return (0, 0, 0)
+
         for move in board.legalMoves(self.color):
             bcopy = board.makeMove(move[0], move[1], self.color)
             if self.color == "black":
-                if self.minValue(bcopy, ply) < best:
-                    best = self.minValue(bcopy, ply)
+                temp = self.minValue(bcopy, self.plies)
+                if temp <= best:
+                    best = temp
                     nextMove = move
 
             else:
-                if self.maxValue(bcopy,ply) > best:
-                    best = self.maxValue(bcopy, ply)
+                temp = self.maxValue(bcopy, self.plies)
+                if temp >= best:
+                    best = temp
                     nextMove = move
 
-        return nextMove
+        return (nextMove[0], nextMove[1], self.heuristicCalls)
 
-    def maxValue(self, board, ply, numHeuristicCalls):
+    def maxValue(self, board, ply):
         if not board.legalMoves(self.color):
             if self.color == "black":
                 return board.scores()[0]
             return board.scores()[1]
 
         elif ply == 0:
+            self.heuristicCalls += 1
             return self.heuristic(board)
         else:
             best = -9999
@@ -101,12 +107,13 @@ class ComputerPlayer:
                 best = max(best, self.minValue(nextMove, ply-1))
             return best
 
-    def minValue(self, board, ply, numHeuristicCalls):
+    def minValue(self, board, ply):
         if not board.legalMoves(self.color):
             if self.color == "black":
                 return board.scores()[0]
             return board.scores()[1]
         elif ply == 0:
+            self.heuristicCalls += 1
             return self.heuristic(board)
         else:
             best = 9999
