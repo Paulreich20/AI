@@ -1,3 +1,5 @@
+### Version 1.1: Fixed bug in heuristic printing
+
 import copy
 import othelloPlayers
 
@@ -7,10 +9,11 @@ black = -1
 empty = 0
 size = 10
 
+
 class OthelloBoard:
     '''An Othello board, with a variety of methods for managing a game.'''
-    
-    def __init__(self,array=None):
+
+    def __init__(self, array=None):
         '''If the parameter 'board' is left out, then the game board
         is initialized to its typical starting postion. Alternatively,
         a two-dimensional list with a pre-existing starting position
@@ -21,7 +24,7 @@ class OthelloBoard:
         if array:
             self.array = array
         else:
-            self.array = [[empty]*size for i in range(size)]
+            self.array = [[empty] * size for i in range(size)]
             self.array[4][4] = white
             self.array[5][5] = white
             self.array[4][5] = black
@@ -32,28 +35,28 @@ class OthelloBoard:
         headers across the left and top. While some might accuse this
         text output as being "old school," having a scrollable game
         history actually makes debugging much easier.'''
-        print(' ',end=' ')
-        for i in range(1,9):
-            print(i,end=' ')
-        print()
-        for i in range(1,size-1):
+        print(' ', end=' ')
+        for i in range(1, 9):
             print(i, end=' ')
-            for j in range(1,size-1):
+        print()
+        for i in range(1, size - 1):
+            print(i, end=' ')
+            for j in range(1, size - 1):
                 if self.array[i][j] == white:
-                    print('W',end=' ')
+                    print('W', end=' ')
                 elif self.array[i][j] == black:
-                    print('B',end=' ')
+                    print('B', end=' ')
                 else:
-                    print('-',end=' ')
+                    print('-', end=' ')
             print()
 
-    def makeMove(self,row,col,piece):
+    def makeMove(self, row, col, piece):
         ''' Returns None if move is not legal. Otherwise returns an
         updated OthelloBoard, which is a copy of the original.'''
 
         # A move cannot be made if a piece is already there.
         if self.array[row][col] != empty:
-             return None
+            return None
 
         # A move cannot be made if the piece "value" is not black or white.
         if piece != black and piece != white:
@@ -64,18 +67,18 @@ class OthelloBoard:
         bcopy[row][col] = piece
 
         # Ranges for use below
-        rowup = range(row+1,size)
-        rowdown = range(row-1,-1,-1)
+        rowup = range(row + 1, size)
+        rowdown = range(row - 1, -1, -1)
         rowfixed = [row for i in range(size)]
-        colup = range(col+1,size)
-        coldown = range(col-1,-1,-1)
+        colup = range(col + 1, size)
+        coldown = range(col - 1, -1, -1)
         colfixed = [col for i in range(size)]
 
         # Set up ranges of tuples representing all eight directions.
-        vectors = [zip(rowup,coldown),zip(rowup,colfixed), \
-                zip(rowup,colup), zip(rowdown,coldown), \
-                zip(rowdown, colfixed), zip(rowdown,colup), \
-                zip(rowfixed,coldown), zip(rowfixed,colup)]
+        vectors = [zip(rowup, coldown), zip(rowup, colfixed), \
+                   zip(rowup, colup), zip(rowdown, coldown), \
+                   zip(rowdown, colfixed), zip(rowdown, colup), \
+                   zip(rowfixed, coldown), zip(rowfixed, colup)]
 
         # Try to make a move in each direction. Record if at least one
         # of them succeeds.
@@ -91,8 +94,8 @@ class OthelloBoard:
             # you see a blank space, you must not have had one of your
             # own pieces on the other end of the range.
             count = 0
-            for (r,c) in vector:
-                if bcopy[r][c] == -1*piece:
+            for (r, c) in vector:
+                if bcopy[r][c] == -1 * piece:
                     count += 1
                 elif bcopy[r][c] == piece:
                     break
@@ -106,51 +109,49 @@ class OthelloBoard:
 
             # Actually record the flips.
             for i in range(count):
-                (r,c) = vector[i]
+                (r, c) = vector[i]
                 bcopy[r][c] = piece
 
         if flipped:
             return OthelloBoard(bcopy)
         else:
             return None
-             
-                         
-    def legalMoves(self,color):
+
+    def _legalMoves(self, color):
         '''To be a legal move, the space must be blank, and you must take at
         least one piece. Note that this method works by attempting to
         move at each possible square, and recording which moves
         succeed. Therefore, using this method in order to try to limit
         which spaces you actually use in makeMoves is futile.'''
         moves = []
-        for i in range(1,size-1):
-            for j in range(1,size-1):
-                bcopy = self.makeMove(i,j,color)
+        for i in range(1, size - 1):
+            for j in range(1, size - 1):
+                bcopy = self.makeMove(i, j, color)
                 if bcopy != None:
-                    moves.append((i,j))
+                    moves.append((i, j))
         return moves
 
     def scores(self):
         '''Returns a list of black and white scores for the current board.'''
-        score = [0,0]
-        for i in range(1,size-1):
-            for j in range(1,size-1):
+        score = [0, 0]
+        for i in range(1, size - 1):
+            for j in range(1, size - 1):
                 if self.array[i][j] == black:
                     score[0] += 1
                 elif self.array[i][j] == white:
                     score[1] += 1
         return score
 
-
     def playGame(self):
         '''Manages playing an actual game of Othello.'''
-        
+
         print('Black goes first.')
         # Two player objects: [black, white]
-        players=[None,None]
-        colorNames = ('black','white')
-        colorValues = (black,white)
-        invalidPasses = [0,0]
-        illegalMoves = [0,0]
+        players = [None, None]
+        colorNames = ('black', 'white')
+        colorValues = (black, white)
+        invalidPasses = [0, 0]
+        illegalMoves = [0, 0]
 
         # Determine whether each player is human or computer, and
         # instantiate accordingly
@@ -159,13 +160,14 @@ class OthelloBoard:
                              ' be (h)uman or (c)omputer? ')
             if response.lower() == 'h':
                 name = input("What is the player's name? ")
-                players[i] = othelloPlayers.HumanPlayer(name,colorValues[i])
+                players[i] = othelloPlayers.HumanPlayer(name, colorValues[i])
+
             else:
                 plies = int(input("How many plies ahead " + \
                                   "should the computer look? "))
-                players[i] = othelloPlayers.ComputerPlayer(
-                               'compy' + colorNames[i],colorValues[i],
-                               othelloPlayers.heuristic,plies)
+                players[i] = othelloPlayers.ComputerPlayerPruning(
+                    'compy' + colorNames[i], colorValues[i],
+                    othelloPlayers.heuristic, plies)
 
         # Number of times a "pass" move has been made, in a row
         passes = 0
@@ -190,7 +192,7 @@ class OthelloBoard:
                 # Obtain move that player makes
                 move = players[i].chooseMove(curBoard)
 
-                if move==None:
+                if move == None:
                     # If no move is made, that is considered a
                     # pass. Verify that there were in fact no legal
                     # moves available. If there were, allow the pass
@@ -199,7 +201,7 @@ class OthelloBoard:
 
                     passes += 1
                     print(colorNames[i] + ' passes.')
-                    legalMoves= curBoard.legalMoves(colorValues[i])
+                    legalMoves = curBoard._legalMoves(colorValues[i])
                     if legalMoves != []:
                         print(colorNames[i] + \
                               ' passed, but there was a legal move.')
@@ -214,13 +216,14 @@ class OthelloBoard:
 
                     passes = 0
                     print(colorNames[i] + ' chooses ' + str(move) + '.')
-                    bcopy = curBoard.makeMove(move[0],move[1],colorValues[i])
-                    if bcopy==None:
+                    bcopy = curBoard.makeMove(move[0], move[1], colorValues[i])
+                    if bcopy == None:
                         print('That move is illegal, turn is forfeited.')
                         illegalMoves[i] += 1
                     else:
                         curBoard = bcopy
-                        print('Number of heuristic calls = ' + str(move[1]))
+                        if (len(move) == 3):
+                            print('Number of heuristic calls = ' + str(move[2]))
                 print()
 
                 # To keep code simple, never test for win or loss; if
@@ -240,5 +243,6 @@ class OthelloBoard:
         else:
             print('Tie game!')
 
-if __name__=='__main__':
+
+if __name__ == '__main__':
     OthelloBoard().playGame()
