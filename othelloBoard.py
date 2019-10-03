@@ -117,7 +117,7 @@ class OthelloBoard:
         else:
             return None
 
-    def _legalMoves(self, color):
+    def legalMoves(self, color):
         '''To be a legal move, the space must be blank, and you must take at
         least one piece. Note that this method works by attempting to
         move at each possible square, and recording which moves
@@ -165,7 +165,7 @@ class OthelloBoard:
             else:
                 plies = int(input("How many plies ahead " + \
                                   "should the computer look? "))
-                players[i] = othelloPlayers.ComputerPlayerPruning(
+                players[i] = othelloPlayers.ComputerPlayer(
                     'compy' + colorNames[i], colorValues[i],
                     othelloPlayers.heuristic, plies)
 
@@ -201,7 +201,7 @@ class OthelloBoard:
 
                     passes += 1
                     print(colorNames[i] + ' passes.')
-                    legalMoves = curBoard._legalMoves(colorValues[i])
+                    legalMoves = curBoard.legalMoves(colorValues[i])
                     if legalMoves != []:
                         print(colorNames[i] + \
                               ' passed, but there was a legal move.')

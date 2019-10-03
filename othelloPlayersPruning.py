@@ -41,24 +41,35 @@ def heuristic(board) -> int:
     stored on the othello board.'''
     corners = [(1,1), (1,8),(8,1),(8,8)]
     bad = [(1,2),(2,2),(2,1),(1,7),(2,7),(2,8),(7,1),(7,2),(8,2),(8,7),(7,7),(7,8)]
-
     ## TO DO DICTIONARIES
 
 
+    # Dictionary contains key representing coordinates of speciic spots on the Othello board and values corresponding
+    # to how good that spot is
+    dict = {(1,1):10, (1,8):10,(8,1):10,(8,8):10,
+            (1,2):-2,(2,2):-2,(2,1):-2,
+            (1,7):-2,(2,7):-2,(2,8):-2,(7,1):-2,
+            (7,2):-2,(8,2):-2,(8,7):-2, (7, 7): -2,(7, 8): -2}
+
     sum = 0
     for i in range(1,othelloBoard.size-1):
-        for j in range(1,othelloBoard.size-1):
-            if (i,j) in corners:
-                mult = 5
-            elif (i,j) in bad:
-                mult = -2
+        for j in range(1, othelloBoard.size-1):
+            if (i, j) in dict.keys():
+                mult = dict[(i, j)]
+            #Consider outermost edges to be better than average choice and spots that allow oppoent to place a piece
+            # on outermost edges to be worse than average
             elif i == 2 or i == 7 or j == 2 or j == 7:
                 mult = -1
             elif i == 1 or i == 8 or j == 1 or j == 8:
-                mult = 2
+                mult = 3
             else:
                 mult = 1
             sum += board.array[i][j]*mult
+
+    # Improve heuristic if player has more mobility than opponent
+    netLegalMoves = len(board.legalMoves(1)) - len(board.legalMoves(-1))
+    sum += 3.14*netLegalMoves
+
     return sum
 
 
@@ -81,26 +92,29 @@ class ComputerPlayer:
         '''This very silly player just returns the first legal move
         that it finds.'''
         self.heuristicCalls = 0
+
+        # Establish reset value to best, use to find min/max of children
         if self.color == -1:
             best = 99999
         else:
             best = -99999
-
         nextMove = (0, 0, 0)
 
+        # Pass if no legal moves
         if not board.legalMoves(self.color):
             return None
 
+        # Run depth first search on all legal moves, using minimax
         for move in board.legalMoves(self.color):
             bcopy = board.makeMove(move[0], move[1], self.color)
             if self.color == -1:
-                temp = self.minValue(bcopy, self.plies, self.color*-1)
+                temp = self.minValue(bcopy, self.plies-1, self.color*-1)
                 if temp <= best:
                     best = temp
                     nextMove = move
 
             else:
-                temp = self.maxValue(bcopy, self.plies, self.color*-1)
+                temp = self.maxValue(bcopy, self.plies-1, self.color*-1)
                 if temp >= best:
                     best = temp
                     nextMove = move
@@ -109,12 +123,11 @@ class ComputerPlayer:
 
     def maxValue(self, board, ply, color):
         if not board.legalMoves(-1) and not board.legalMoves(1):
-            board.display()
             score = board.scores()[1] - board.scores()[0]
             if score == 0:
                 return 0
             if (color == -1 and score < 0) or (color == 1 and score < 0):
-                return -9999  #If we hit a board state with black winning we always prefer it
+                return -9999
             if (color == 1 and score > 0) or (color == -1 and score > 0):
                 return 9999
 
@@ -130,12 +143,11 @@ class ComputerPlayer:
 
     def minValue(self, board, ply, color):
         if not board.legalMoves(-1) and not board.legalMoves(1):
-            board.display()
             score = board.scores()[1] - board.scores()[0]
             if score == 0:
                 return 0
             if (color == -1 and score < 0) or (color == 1 and score < 0):
-                return -9999  #If we hit a board state with black winning we always prefer it
+                return -9999
             if (color == 1 and score > 0) or (color == -1 and score > 0):
                 return 9999
 
@@ -149,9 +161,7 @@ class ComputerPlayer:
                 best = min(best, self.maxValue(nextMove, ply-1, color*-1))
             return best
 
-
-
-class ComputerPlayerPruning:#actual
+class ComputerPlayerPruning:
     '''Computer player: chooseMove is where the action is.'''
     def __init__(self,name,color,heuristic,plies) -> None:
         self.name = name
@@ -181,13 +191,13 @@ class ComputerPlayerPruning:#actual
         for move in board.legalMoves(self.color):
             bcopy = board.makeMove(move[0], move[1], self.color)
             if self.color == -1:
-                temp = self.minValue(bcopy, self.plies, self.color*-1, -999999, 999999)
+                temp = self.minValue(bcopy, self.plies-1, self.color*-1, -999999, 999999)
                 if temp <= best:
                     best = temp
                     nextMove = move
 
             else:
-                temp = self.maxValue(bcopy, self.plies, self.color*-1, -999999, 999999)
+                temp = self.maxValue(bcopy, self.plies-1, self.color*-1, -999999, 999999)
                 if temp >= best:
                     best = temp
                     nextMove = move
@@ -196,12 +206,11 @@ class ComputerPlayerPruning:#actual
 
     def maxValue(self, board, ply, color, alpha, beta):
         if not board.legalMoves(-1) and not board.legalMoves(1):
-            board.display()
             score = board.scores()[1] - board.scores()[0]
             if score == 0:
                 return 0
             if (color == -1 and score < 0) or (color == 1 and score < 0):
-                return -9999  #If we hit a board state with black winning we always prefer it
+                return -9999
             if (color == 1 and score > 0) or (color == -1 and score > 0):
                 return 9999
 
@@ -220,12 +229,11 @@ class ComputerPlayerPruning:#actual
 
     def minValue(self, board, ply, color, alpha, beta):
         if not board.legalMoves(-1) and not board.legalMoves(1):
-            board.display()
             score = board.scores()[1] - board.scores()[0]
             if score == 0:
                 return 0
             if (color == -1 and score < 0) or (color == 1 and score < 0):
-                return -9999  #If we hit a board state with black winning we always prefer it
+                return -9999
             if (color == 1 and score > 0) or (color == -1 and score > 0):
                 return 9999
 
@@ -241,6 +249,8 @@ class ComputerPlayerPruning:#actual
                     return best
                 beta = min(beta, best)
             return best
+
+
 
 
 
