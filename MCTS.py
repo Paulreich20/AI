@@ -12,6 +12,8 @@ import random
 import argparse
 import game1
 
+import numpy
+
 # You will want to use this import in your code
 import math
 
@@ -60,14 +62,67 @@ class Node(object):
         outcome: +1 for 1st player win, -1 for 2nd player win, 0 for draw."""
         "*** YOUR CODE HERE ***"
         # NOTE: which outcome is preferred depends on self.state.turn()
-        raise NotImplementedError("You must implement this method")
+        if self.value == float("nan"):
+            if outcome == 0:
+                self.value = .5
+            elif self.state.turn() == outcome:
+                self.value = 1
+            else:
+                self.value = 0
+            return
+
+        self.value = self.value*(self.visits-1)
+        if outcome == 0:
+            self.value = (self.value + .5)/self.visits
+        elif self.state.turn() == outcome:
+            self.value = (self.value + 1)/self.visits
+        else:
+            self.value = self.value/self.visits
+        return
 
     def UCBWeight(self):
         """Weight from the UCB formula used by parent to select a child.
         This node will be selected by parent with probability proportional
         to its weight."""
         "*** YOUR CODE HERE ***"
-        raise NotImplementedError("You must implement this method")
+        c = 999999
+        ucb = self.value + (c*math.sqrt(numpy.log(self.parent.visits)/self.visits))
+        return ucb
+
+def childrenUnexpanded(node):
+    for child in node.children.values():
+        if not child.visits:
+            return child
+    return 0
+
+
+def select(root, rollouts):
+    child = childrenUnexpanded(root)
+    if child:
+        expand(child, rollouts)
+
+    # Return to previous level if reach end state?
+    else:
+        sortedChildren = root.children.sorted(key=lambda x: x.UCBWeight(), reverse=True)
+        if not sortedChildren:
+            backPropagate(root, root.getValue())
+        select(sortedChildren[0], rollouts)
+
+def expand(node, rollouts):
+    if node.children == {}:
+        backPropagate(node, node.getValue())
+    else:
+        rollout(node, rollouts)
+
+def rollout(node, rollouts):
+    return
+
+def backPropagate(node, value):
+    return
+
+
+
+
 
 def MCTS(root, rollouts):
     """Select a move by Monte Carlo tree search.
@@ -86,6 +141,8 @@ def MCTS(root, rollouts):
     """
     "*** YOUR CODE HERE ***"
     # NOTE: you will need several helper functions
+
+
     return random_move(root) # Replace this line with a correct implementation
 
 
