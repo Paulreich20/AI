@@ -117,8 +117,8 @@ def select(root, rollouts):
         sortedChildren = sorted(root.children.items(), key=lambda kv: kv[1].UCBWeight(), reverse=True)
         if sortedChildren == []:
             backPropagate(root, root.getValue())
-        print(sortedChildren)
-        select(sortedChildren[0], rollouts)
+        else:
+            select(sortedChildren[0], rollouts)
 
 def expand(node, rollouts):
     node.visits += 1
