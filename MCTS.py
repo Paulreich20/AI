@@ -65,19 +65,19 @@ class Node(object):
         if self.value == float("nan"):
             if outcome == 0:
                 self.value = .5
-            elif self.state.turn() == outcome:
+            elif self.state.turn == outcome:
                 self.value = 1
             else:
                 self.value = 0
             return
 
-        self.value = self.value*(self.visits-1)
+        numerator = self.value*(self.visits-1)
         if outcome == 0:
-            self.value = (self.value + .5)/self.visits
-        elif self.state.turn() == outcome:
-            self.value = (self.value + 1)/self.visits
+            self.value = (numerator + .5)/self.visits
+        elif self.state.turn == outcome:
+            self.value = (numerator + 1)/self.visits
         else:
-            self.value = self.value/self.visits
+            self.value = numerator/self.visits
         return
 
     def UCBWeight(self):
@@ -85,43 +85,63 @@ class Node(object):
         This node will be selected by parent with probability proportional
         to its weight."""
         "*** YOUR CODE HERE ***"
-        c = 999999
+        c = UCB_CONST
         ucb = self.value + (c*math.sqrt(numpy.log(self.parent.visits)/self.visits))
         return ucb
 
 def childrenUnexpanded(node):
-    for child in node.children.values():
-        if not child.visits:
-            return child
-    return 0
+    # for child in node.children.values():
+    #     if not child.visits:
+    #         return child
+    # return 0
+    possMoves = node.state.getMoves()
+    if possMoves == []:
+        return 0
+
+    for move in possMoves:
+        if move not in node.children.keys():
+            return move
+
 
 
 def select(root, rollouts):
     child = childrenUnexpanded(root)
+    root.visits += 1
     if child:
-        expand(child, rollouts)
+        nextNode = Node(root.state.nextState(child),root)
+        root.addMove(child)
+        expand(nextNode, rollouts)
 
     # Return to previous level if reach end state?
     else:
-        sortedChildren = root.children.sorted(key=lambda x: x.UCBWeight(), reverse=True)
-        if not sortedChildren:
+        sortedChildren = sorted(root.children.items(), key=lambda kv: kv[1].UCBWeight(), reverse=True)
+        if sortedChildren == []:
             backPropagate(root, root.getValue())
+        print(sortedChildren)
         select(sortedChildren[0], rollouts)
 
 def expand(node, rollouts):
-    if node.children == {}:
+    node.visits += 1
+    if node.state.isTerminal():
         backPropagate(node, node.getValue())
     else:
         rollout(node, rollouts)
 
 def rollout(node, rollouts):
-    return
+    temp = node
+    while not temp.state.isTerminal():
+        move = random_move(temp)
+        temp.addMove(move)
+        temp = temp.children[move]
+    result = temp.value
+    backPropagate(node, result)
 
 def backPropagate(node, value):
-    return
-
-
-
+    node.updateValue(value)
+    if node.parent == None:
+        return node
+    else:
+        return backPropagate(node.parent, value)
 
 
 def MCTS(root, rollouts):
@@ -141,9 +161,12 @@ def MCTS(root, rollouts):
     """
     "*** YOUR CODE HERE ***"
     # NOTE: you will need several helper functions
+    select(root, rollouts)
+    return sorted(root.children.items(), key=lambda kv: kv[1].UCBWeight(), reverse=True)[0]
 
 
-    return random_move(root) # Replace this line with a correct implementation
+
+    #return random_move(root) # Replace this line with a correct implementation
 
 
 def parse_args():
