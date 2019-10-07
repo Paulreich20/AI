@@ -137,8 +137,8 @@ def rollout(node, rollouts):
             temp.addMove(move)
             temp = temp.children[move]
         rollouts -= 1
-        if temp.value() > result:
-            result = temp.value()
+        if temp.state.value() > result:
+            result = temp.state.value()
     backPropagate(node, result)
 
 def backPropagate(node, value):
