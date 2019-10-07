@@ -108,9 +108,10 @@ def select(root, rollouts):
     child = childrenUnexpanded(root)
     root.visits += 1
     if child:
-        nextNode = Node(root.state.nextState(child),root)
+        print("we got here, child is :" + str(child))
         root.addMove(child)
-        expand(nextNode, rollouts)
+        root.children[child].parent = root  #When we create a node we tell it who its parent is
+        expand(root.children[child], rollouts)
 
     # Return to previous level if reach end state?
     else:
@@ -129,11 +130,15 @@ def expand(node, rollouts):
 
 def rollout(node, rollouts):
     temp = node
-    while not temp.state.isTerminal():
-        move = random_move(temp)
-        temp.addMove(move)
-        temp = temp.children[move]
-    result = temp.value
+    result = 0
+    while rollouts > 0:
+        while not temp.state.isTerminal():
+            move = random_move(temp)
+            temp.addMove(move)
+            temp = temp.children[move]
+        rollouts -= 1
+        if temp.value() > result:
+            result = temp.value()
     backPropagate(node, result)
 
 def backPropagate(node, value):
@@ -162,7 +167,8 @@ def MCTS(root, rollouts):
     "*** YOUR CODE HERE ***"
     # NOTE: you will need several helper functions
     select(root, rollouts)
-    return sorted(root.children.items(), key=lambda kv: kv[1].UCBWeight(), reverse=True)[0]
+    print(root.children.items())
+    return sorted(root.children.items(), key=lambda kv: kv[1].UCBWeight(), reverse=True)[0][0]
 
 
 
