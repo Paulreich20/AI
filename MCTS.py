@@ -96,7 +96,7 @@ def childrenUnexpanded(node):
     # return 0
     possMoves = node.state.getMoves()
     if possMoves == []:
-        return 0
+        return None
 
     for move in possMoves:
         if move not in node.children.keys():
@@ -107,14 +107,14 @@ def childrenUnexpanded(node):
 def select(root, rollouts):
     child = childrenUnexpanded(root)
     root.visits += 1
-    if child:
-        print("we got here, child is :" + str(child))
+    if child is not None:
         root.addMove(child)
         root.children[child].parent = root  #When we create a node we tell it who its parent is
         expand(root.children[child], rollouts)
 
     # Return to previous level if reach end state?
     else:
+        print(str(child))
         sortedChildren = sorted(root.children.items(), key=lambda kv: kv[1].UCBWeight(), reverse=True)
         if sortedChildren == []:
             backPropagate(root, root.getValue())
