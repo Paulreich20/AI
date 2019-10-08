@@ -62,6 +62,8 @@ class Node(object):
         outcome: +1 for 1st player win, -1 for 2nd player win, 0 for draw."""
         "*** YOUR CODE HERE ***"
         # NOTE: which outcome is preferred depends on self.state.turn()
+        self.visits += 1
+        print(self.visits)
         if self.value == float("nan"):
             if outcome == 0:
                 self.value = .5
@@ -78,6 +80,8 @@ class Node(object):
             self.value = (numerator + 1)/self.visits
         else:
             self.value = numerator/self.visits
+
+
         return
 
     def UCBWeight(self):
@@ -106,7 +110,6 @@ def childrenUnexpanded(node):
 
 def select(root, rollouts):
     child = childrenUnexpanded(root)
-    root.visits += 1
     if child is not None:
         root.addMove(child)
         root.children[child].parent = root  #When we create a node we tell it who its parent is
@@ -114,7 +117,7 @@ def select(root, rollouts):
 
     # Return to previous level if reach end state?
     else:
-        print(str(child))
+        #print(str(child))
         sortedChildren = sorted(root.children.items(), key=lambda kv: kv[1].UCBWeight(), reverse=True)
         if sortedChildren == []:
             backPropagate(root, root.getValue())
@@ -122,14 +125,14 @@ def select(root, rollouts):
             select(sortedChildren[0], rollouts)
 
 def expand(node, rollouts):
-    node.visits += 1
+    #node.visits += 1
     if node.state.isTerminal():
         backPropagate(node, node.getValue())
     else:
         rollout(node, rollouts)
 
 def rollout(node, rollouts):
-    temp = node
+    temp = Node(node.state, None)
     result = 0
     while rollouts > 0:
         while not temp.state.isTerminal():
@@ -144,6 +147,7 @@ def rollout(node, rollouts):
 def backPropagate(node, value):
     node.updateValue(value)
     if node.parent == None:
+        #print(node.visits)
         return node
     else:
         return backPropagate(node.parent, value)
@@ -167,7 +171,6 @@ def MCTS(root, rollouts):
     "*** YOUR CODE HERE ***"
     # NOTE: you will need several helper functions
     select(root, rollouts)
-    print(root.children.items())
     return sorted(root.children.items(), key=lambda kv: kv[1].UCBWeight(), reverse=True)[0][0]
 
 

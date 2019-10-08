@@ -9,7 +9,6 @@ This module represents the game of Connect 4.
 
 import numpy as np
 
-
 HEIGHT = 6 # Height of the connect 4 board
 WIDTH = 5 # Width of the connect 4 board
 CONNECT = 4  # Number of items in a sequence necessary to win 
