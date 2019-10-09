@@ -63,23 +63,22 @@ class Node(object):
         "*** YOUR CODE HERE ***"
         # NOTE: which outcome is preferred depends on self.state.turn()
         self.visits += 1
-        print(self.visits)
-        if self.value == float("nan"):
+        if math.isnan(self.value):
             if outcome == 0:
                 self.value = .5
             elif self.state.turn == outcome:
-                self.value = 1
-            else:
                 self.value = 0
+            else:
+                self.value = 1
             return
 
         numerator = self.value*(self.visits-1)
         if outcome == 0:
             self.value = (numerator + .5)/self.visits
         elif self.state.turn == outcome:
-            self.value = (numerator + 1)/self.visits
+            self.value = (numerator)/self.visits
         else:
-            self.value = numerator/self.visits
+            self.value = (numerator+1)/self.visits
 
 
         return
@@ -99,58 +98,56 @@ def childrenUnexpanded(node):
     #         return child
     # return 0
     possMoves = node.state.getMoves()
-    if possMoves == []:
+    if node.state.isTerminal():
         return None
 
     for move in possMoves:
         if move not in node.children.keys():
             return move
 
+    return None
 
 
-def select(root, rollouts):
+def select(root):
     child = childrenUnexpanded(root)
     if child is not None:
         root.addMove(child)
         root.children[child].parent = root  #When we create a node we tell it who its parent is
-        expand(root.children[child], rollouts)
+        expand(root.children[child], root)
 
     # Return to previous level if reach end state?
     else:
         #print(str(child))
         sortedChildren = sorted(root.children.items(), key=lambda kv: kv[1].UCBWeight(), reverse=True)
         if sortedChildren == []:
-            backPropagate(root, root.getValue())
+            backPropagate(root, root.getValue(), root)
         else:
-            select(sortedChildren[0], rollouts)
+            select(sortedChildren[0][1])
 
-def expand(node, rollouts):
+def expand(node, root):
     #node.visits += 1
     if node.state.isTerminal():
-        backPropagate(node, node.getValue())
+        backPropagate(node, node.getValue(), root)
     else:
-        rollout(node, rollouts)
+        rollout(node, root)
 
-def rollout(node, rollouts):
+def rollout(node, root):
     temp = Node(node.state, None)
     result = 0
-    while rollouts > 0:
-        while not temp.state.isTerminal():
-            move = random_move(temp)
-            temp.addMove(move)
-            temp = temp.children[move]
-        rollouts -= 1
-        if temp.state.value() > result:
-            result = temp.state.value()
-    backPropagate(node, result)
+    while not temp.state.isTerminal():
+        move = random_move(temp)
+        temp.addMove(move)
+        temp = temp.children[move]
+    result = temp.state.value()
+    backPropagate(node, result, root)
 
-def backPropagate(node, value):
+def backPropagate(node, value, root):
     node.updateValue(value)
-    if node.parent == None:
+    if node == root:
         #print(node.visits)
         return node
     else:
-        return backPropagate(node.parent, value)
+        return backPropagate(node.parent, value, root)
 
 
 def MCTS(root, rollouts):
@@ -170,7 +167,8 @@ def MCTS(root, rollouts):
     """
     "*** YOUR CODE HERE ***"
     # NOTE: you will need several helper functions
-    select(root, rollouts)
+    for i in range(rollouts):
+        select(root)
     return sorted(root.children.items(), key=lambda kv: kv[1].UCBWeight(), reverse=True)[0][0]
 
 
