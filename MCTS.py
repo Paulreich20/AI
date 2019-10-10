@@ -80,7 +80,6 @@ class Node(object):
         else:
             self.value = (numerator+1)/self.visits
 
-
         return
 
     def UCBWeight(self):
@@ -93,10 +92,6 @@ class Node(object):
         return ucb
 
 def childrenUnexpanded(node):
-    # for child in node.children.values():
-    #     if not child.visits:
-    #         return child
-    # return 0
     possMoves = node.state.getMoves()
     if node.state.isTerminal():
         return None
@@ -104,7 +99,6 @@ def childrenUnexpanded(node):
     for move in possMoves:
         if move not in node.children.keys():
             return move
-
     return None
 
 
@@ -114,10 +108,7 @@ def select(root):
         root.addMove(child)
         root.children[child].parent = root  #When we create a node we tell it who its parent is
         expand(root.children[child], root)
-
-    # Return to previous level if reach end state?
     else:
-        #print(str(child))
         sortedChildren = sorted(root.children.items(), key=lambda kv: kv[1].UCBWeight(), reverse=True)
         if sortedChildren == []:
             backPropagate(root, root.getValue(), root)
@@ -125,7 +116,6 @@ def select(root):
             select(sortedChildren[0][1])
 
 def expand(node, root):
-    #node.visits += 1
     if node.state.isTerminal():
         backPropagate(node, node.getValue(), root)
     else:
@@ -133,7 +123,6 @@ def expand(node, root):
 
 def rollout(node, root):
     temp = Node(node.state, None)
-    result = 0
     while not temp.state.isTerminal():
         move = random_move(temp)
         temp.addMove(move)
@@ -144,7 +133,6 @@ def rollout(node, root):
 def backPropagate(node, value, root):
     node.updateValue(value)
     if node == root:
-        #print(node.visits)
         return node
     else:
         return backPropagate(node.parent, value, root)
@@ -169,11 +157,9 @@ def MCTS(root, rollouts):
     # NOTE: you will need several helper functions
     for i in range(rollouts):
         select(root)
-    return sorted(root.children.items(), key=lambda kv: kv[1].UCBWeight(), reverse=True)[0][0]
+    choice = sorted(root.children.items(), key=lambda kv: kv[1].getValue(), reverse=True)[0][0]
+    return choice
 
-
-
-    #return random_move(root) # Replace this line with a correct implementation
 
 
 def parse_args():
