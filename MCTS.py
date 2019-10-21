@@ -87,8 +87,8 @@ class Node(object):
         This node will be selected by parent with probability proportional
         to its weight."""
         "*** YOUR CODE HERE ***"
-        c = UCB_CONST
-        ucb = self.value + (c*math.sqrt(numpy.log(self.parent.visits)/self.visits))
+        c = 0.5
+        ucb = self.value + (.5*math.sqrt(numpy.log(self.parent.visits)/self.visits))
         return ucb
 
 def childrenUnexpanded(node):
@@ -132,6 +132,7 @@ def rollout(node, root):
 
 def backPropagate(node, value, root):
     node.updateValue(value)
+
     if node == root:
         return node
     else:
