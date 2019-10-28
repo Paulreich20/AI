@@ -45,13 +45,32 @@ def testLiteral(literal,clauses):
     return None
 
 if __name__ == '__main__':
-    clauses = [[-1,-2],[2 ,1],[-2,-3],[3,2],[-3,-1],[-3, -2],[1,2,3]]
+    clauses = [[-1,1],[-1,3],[-2,-3],[3,2],[-3,2,-1],[3,-2],[3,1]]
     print('Knowledge base is satisfiable:',testKb(clauses))
-    print('Is Cal a truth-teller?', end=' ')
-    result = testLiteral(3,clauses)
+    print('Is Amy a truth-teller?', end=' ')
+    result = testLiteral(1,clauses)
     if result==True:
         print('Yes.')
     elif result==False:
         print('No.')
     else:
         print('Unknown.')
+    print('Is Bob a truth-teller?', end=' ')
+
+    result = testLiteral(2,clauses)
+    if result==True:
+        print('Yes.')
+    elif result==False:
+            print('No.')
+    else:
+        print('Unknown.')
+    print('Is Cal a truth-teller?', end=' ')
+
+    result = testLiteral(3,clauses)
+    if result==True:
+        print('Yes.')
+    elif result==False:
+            print('No.')
+    else:
+        print('Unknown.')
+

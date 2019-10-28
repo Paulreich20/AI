@@ -1,7 +1,7 @@
 ### Version 1.1: Fixed bug in heuristic printing
 
 import copy
-import othelloPlayers
+import othelloPlayersPruning
 
 # Constant values used throughout the code
 white = 1
@@ -160,14 +160,14 @@ class OthelloBoard:
                              ' be (h)uman or (c)omputer? ')
             if response.lower() == 'h':
                 name = input("What is the player's name? ")
-                players[i] = othelloPlayers.HumanPlayer(name, colorValues[i])
+                players[i] = othelloPlayersPruning.HumanPlayer(name, colorValues[i])
 
             else:
                 plies = int(input("How many plies ahead " + \
                                   "should the computer look? "))
-                players[i] = othelloPlayers.ComputerPlayer(
+                players[i] = othelloPlayersPruning.ComputerPlayer(
                     'compy' + colorNames[i], colorValues[i],
-                    othelloPlayers.heuristic, plies)
+                    othelloPlayersPruning.heuristic, plies)
 
         # Number of times a "pass" move has been made, in a row
         passes = 0
