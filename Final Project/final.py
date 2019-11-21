@@ -6,24 +6,30 @@ class Node(object):
         self.category = None
         self.subcategory = None
         self.entropy = entropy
-        self.dataPerOutcome = dataPerOutcome
+        self.dataPerOutcome = dataPerOutcome.copy()
         self.children = {}
         self.possible_splits = possible_splits
 
-    def makeChildren(self, split_category, subcategories):
+    def makeChildren(self, split_category, subcategories, emptyDataPerOutcome):
         children = {}
         newCategories = self.possible_splits.copy()
         newCategories.remove(split_category)
         for sub in subcategories[split_category]:
-            new = Node(None, {}, newCategories)
+            new = Node(None, makeEmpty(subcategories), newCategories)
             new.subcategory = sub
             new.category = split_category
+
             children[sub] = new
 
-        for key in self.dataPerOutcome.keys():
-            for row in self.dataPerOutcome[key]:
-                child =
-                children[row[split_category]].dataPerOutcome[key].append(row)
+        temp = self.dataPerOutcome.items()
+        for key, value in temp:
+            print(len(temp))
+            for row in value:
+                subcategory = row[split_category]
+                #if self.dataPerOutcome == children[subcategory].dataPerOutcome:
+                    #print(111)
+                children[subcategory].dataPerOutcome[key].append(row)
+                print(len(children[subcategory].dataPerOutcome[key]))
 
         childrenList = []
         for child in children.values():
@@ -36,6 +42,7 @@ class Node(object):
         total_entropy = 0
         denominator = 0
         for outcome in self.dataPerOutcome.values(): denominator += len(outcome)
+        print(denominator)
         for child in children:
             numerator = 0
             for outcome in child.dataPerOutcome.values(): numerator += len(outcome)
@@ -59,7 +66,7 @@ def entropy(outcomes):
 
     return entropy
 
-def split(node, subcategories):
+def split(node, subcategories, emptyDataPerOutcome):
     outcome = None
     counter = 0
     for key in node.dataPerOutcome.keys():
@@ -76,27 +83,33 @@ def split(node, subcategories):
         node.children = outcome
         return
 
-
     bestSplit = None
     for category in node.possible_splits:
-        possChildren = node.makeChildren(category, subcategories)
+        possChildren = node.makeChildren(category, subcategories, emptyDataPerOutcome)
         if bestSplit is None or getGain(node, possChildren) > getGain(node, bestSplit):
             bestSplit = possChildren
     node.children = bestSplit
 
     for child in node.children:
-        split(child, subcategories)
+        split(child, subcategories, emptyDataPerOutcome)
 
+def makeEmpty(subcategories):
+    emptyDataPerOutcome = {}
+    for val in subcategories["outcome"]:
+        emptyDataPerOutcome[val] = []
+    return emptyDataPerOutcome
 
 def makeTree(data, categories, subcategories):
     rowPerOutcome = {}
+    emptyDataPerOutcome = {}
     for val in subcategories["outcome"]:
         rowPerOutcome[val] = []
+        emptyDataPerOutcome[val] = []
     for row in data:
         outcome = row["outcome"]
         rowPerOutcome[outcome].append(row)
     root = Node(entropy(rowPerOutcome), rowPerOutcome, categories)
-    split(root, subcategories)
+    split(root, subcategories, emptyDataPerOutcome)
     return root
     #split(root,categories)
 
