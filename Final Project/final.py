@@ -9,6 +9,7 @@ class Node(object):
         self.dataPerOutcome = dataPerOutcome.copy()
         self.children = {}
         self.possible_splits = possible_splits
+        self.accuracy = 0
 
     def makeChildren(self, split_category, subcategories, emptyDataPerOutcome):
         children = {}
@@ -18,18 +19,13 @@ class Node(object):
             new = Node(None, makeEmpty(subcategories), newCategories)
             new.subcategory = sub
             new.category = split_category
-
             children[sub] = new
 
-        temp = self.dataPerOutcome.items()
-        for key, value in temp:
-            print(len(temp))
-            for row in value:
-                subcategory = row[split_category]
-                #if self.dataPerOutcome == children[subcategory].dataPerOutcome:
-                    #print(111)
-                children[subcategory].dataPerOutcome[key].append(row)
-                print(len(children[subcategory].dataPerOutcome[key]))
+        for lst in self.dataPerOutcome.values():
+            for row in lst:
+                if row != {}:
+                    children[row[split_category]].dataPerOutcome[row['outcome']] += [row]
+
 
         childrenList = []
         for child in children.values():
@@ -41,28 +37,38 @@ class Node(object):
     def childrenEntropy(self, children):
         total_entropy = 0
         denominator = 0
-        for outcome in self.dataPerOutcome.values(): denominator += len(outcome)
-        print(denominator)
+        for outcome in self.dataPerOutcome.values():
+            denominator += len(outcome)
+        if denominator == 0:
+            return 0
+
         for child in children:
             numerator = 0
             for outcome in child.dataPerOutcome.values(): numerator += len(outcome)
             total_entropy += numerator / denominator * child.entropy
         return total_entropy
 
+
 def getGain(parent, children):
     childEntropy = parent.childrenEntropy(children)
     return parent.entropy - childEntropy
+
 
 def entropy(outcomes):
     total = 0
     entropy = 0
 
-    for outcome in outcomes:
+    for outcome in outcomes.values():
         total += len(outcome)
 
-    for outcome in outcomes:
+    if total == 0:
+        return 0
+    for outcome in outcomes.values():
         current = len(outcome)
-        entropy += (current/total)*math.log(total/current, 2)
+        if current == 0:
+            entropy += 0
+        else:
+            entropy += (current/total)*math.log(total/current, 2)
 
     return entropy
 
@@ -78,7 +84,6 @@ def split(node, subcategories, emptyDataPerOutcome):
         else:
             outcome = key
             counter += 1
-
     if counter == 1:
         node.children = outcome
         return
@@ -111,7 +116,6 @@ def makeTree(data, categories, subcategories):
     root = Node(entropy(rowPerOutcome), rowPerOutcome, categories)
     split(root, subcategories, emptyDataPerOutcome)
     return root
-    #split(root,categories)
 
 def parse():
     parser = argparse.ArgumentParser()
@@ -139,17 +143,26 @@ def load_dataset(file):
                         if list[i] not in subcategories["outcome"]:
                             subcategories["outcome"].append(list[i])
                     else:
+                    #elif len(list[i]) <= 1:
                         dict[categories[i]] = list[i]
                         if list[i] not in subcategories[categories[i]]:
                             subcategories[categories[i]].append(list[i])
                 data.append(dict)
-    categories = categories[:-1]
+    categories = categories[1:-1]
     return [data, categories, subcategories]
 
+
+def rlen(dic):
+    l = 0
+    for lst in dic:
+        l += len(lst)
+    return l
+
 def display(node, level, outcomes):
+    a = {'1': "mammal", '2': 'birds', '3': 'reptiles', '4': 'fish', '5': 'amphibian', '6': 'insect', '7': 'invertebrates'}
     if node.category is None:
         for child in node.children:
-            display(child, level)
+            display(child, level, outcomes)
         return
     else:
         print("| \t"*level, end="")
@@ -159,7 +172,25 @@ def display(node, level, outcomes):
             return
         print(statement)
         for child in node.children:
-            display(child, level +1)
+            display(child, level +1, outcomes)
+
+def testTree(root, input):
+    if root.category is None:
+        cat = root.children[0].category
+        subcat = input[cat]
+        for child in root.children:
+            if child.subcategory == subcat:
+                temp = child
+
+    while type(temp.children) == type([]):
+        cat = temp.children[0].category
+        for child in temp.children:
+            if child.subcategory == input[cat]:
+                temp = child
+
+    if temp.children != input['outcome']:
+        return False
+    return True
 
 
 if __name__ == '__main__':
@@ -167,5 +198,5 @@ if __name__ == '__main__':
     data = load_dataset(dataset)
     root = makeTree(data[0], data[1], data[2])
     display(root, 0, data[2]["outcome"])
-    #root = makeTree(data[0], data[1], data[2])
-    #display(root, 0)
+    for i in range(len(data[0])):
+         print(i, testTree(root, data[0][i]))
