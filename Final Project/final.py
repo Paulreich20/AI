@@ -210,9 +210,10 @@ def testTree(root, input):
             #if still in tree and still correct then we "recurse"
             if child.subcategory == input[cat]:
                 temp = child
+    print(temp.children)
     if temp.children != input['outcome']:
         return False
-
+    print(input["outcome"])
     return True
 
 def tenFoldCrossValidation(data):
@@ -231,9 +232,7 @@ def tenFoldCrossValidation(data):
         for valid in testSet:
             if testTree(root, valid) == True:
                 numCorrect += 1
-        print(trainingSet)
-        print("                ")
-        print(testSet)
+
         accuracyList.append(numCorrect / len(testSet))
     return accuracyList
 
@@ -241,6 +240,7 @@ if __name__ == '__main__':
     dataset = parse()
     data = load_dataset(dataset)
     root = makeTree(data[0], data[1], data[2])
+    print(data[2])
     display(root, 0, data[2]["outcome"])
     print(tenFoldCrossValidation(data))
     # for i in range(len(data[0])):
