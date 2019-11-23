@@ -105,18 +105,19 @@ def split(node, subcategories, emptyDataPerOutcome):
     bestSplit = None
     for category in node.possible_splits:
         possChildren = node.makeChildren(category, subcategories, emptyDataPerOutcome)
-        if node.entropy == node.childrenEntropy(possChildren):
-            bestSplit = None
-            temp = None
-            for k, v in node.dataPerOutcome.items():
-                if bestSplit is None or len(v) > len(bestSplit):
-                    temp = k
-                    bestSplit = v
-            node.children = temp
-            return
-        elif bestSplit is None or getGain(node, possChildren) > getGain(node, bestSplit):
+        if bestSplit is None or getGain(node, possChildren) > getGain(node, bestSplit):
             bestSplit = possChildren
     node.children = bestSplit
+
+    if node.entropy == node.childrenEntropy(bestSplit):
+        majorityOutcome = None
+        temp = None
+        for k, v in node.dataPerOutcome.items():
+            if majorityOutcome is None or len(v) > len(majorityOutcome):
+                temp = k
+                majorityOutcome = v
+        node.children = temp
+        return
 
     for child in node.children:
         split(child, subcategories, emptyDataPerOutcome)
@@ -167,7 +168,6 @@ def load_dataset(file):
                         if list[i] not in subcategories["outcome"]:
                             subcategories["outcome"].append(list[i])
                     else:
-                    #elif len(list[i]) <= 1:
                         dict[categories[i]] = list[i]
                         if list[i] not in subcategories[categories[i]]:
                             subcategories[categories[i]].append(list[i])
@@ -183,7 +183,6 @@ def rlen(dic):
     return l
 
 def display(node, level, outcomes):
-    a = {'1': "mammal", '2': 'birds', '3': 'reptiles', '4': 'fish', '5': 'amphibian', '6': 'insect', '7': 'invertebrates'}
     if node.category is None:
         for child in node.children:
             display(child, level, outcomes)

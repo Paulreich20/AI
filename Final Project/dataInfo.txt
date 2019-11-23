@@ -1,0 +1,42 @@
+zoo.data
+Attribute Information:
+
+1. animal name: Unique for each instance
+2. hair: Boolean
+3. feathers: Boolean
+4. eggs: Boolean
+5. milk: Boolean
+6. airborne: Boolean
+7. aquatic: Boolean
+8. predator: Boolean
+9. toothed: Boolean
+10. backbone: Boolean
+11. breathes: Boolean
+12. venomous: Boolean
+13. fins: Boolean
+14. legs: Numeric (set of values: {0,2,4,5,6,8})
+15. tail: Boolean
+16. domestic: Boolean
+17. catsize: Boolean
+18. type: Categorical:
+    1 -- Mammal(41) aardvark, antelope, bear, boar, buffalo, calf, cavy, cheetah, deer, dolphin, elephant, fruitbat, giraffe, girl, goat, gorilla, hamster, hare, leopard, lion, lynx, mink, mole, mongoose, opossum, oryx, platypus, polecat, pony, porpoise, puma, pussycat, raccoon, reindeer, seal, sealion, squirrel, vampire, vole, wallaby,wolf
+    2 -- Bird(20) chicken, crow, dove, duck, flamingo, gull, hawk, kiwi, lark, ostrich, parakeet, penguin, pheasant, rhea, skimmer, skua, sparrow, swan, vulture, wren
+    3 -- Reptile(5) pitviper, seasnake, slowworm, tortoise, tuatara
+    4 -- Fish(13) bass, carp, catfish, chub, dogfish, haddock, herring, pike, piranha, seahorse, sole, stingray, tuna
+    5 -- Amphibian(4) frog, frog, newt, toad
+    6 -- Insect(8) flea, gnat, honeybee, housefly, ladybird, moth, termite, wasp
+    7 -- Invertebrate(10) clam, crab, crayfish, lobster, octopus, scorpion, seawasp, slug, starfish, worm
+
+cmc.data
+Attribute Information:
+
+1. Wife's age (categorical) 1=0-19, 2=20-29, 3=30-39, 4=40-49
+2. Wife's education (categorical) 1=low, 2, 3, 4=high
+3. Husband's education (categorical) 1=low, 2, 3, 4=high
+4. Number of children ever born (numerical)
+5. Wife's religion (binary) 0=Non-Islam, 1=Islam
+6. Wife's now working? (binary) 0=Yes, 1=No
+7. Husband's occupation (categorical) 1, 2, 3, 4
+8. Standard-of-living index (categorical) 1=low, 2, 3, 4=high
+9. Media exposure (binary) 0=Good, 1=Not good
+10. Contraceptive method used (class attribute) 1=No-use, 2=Long-term, 3=Short-term
