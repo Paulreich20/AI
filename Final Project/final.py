@@ -1,6 +1,6 @@
 import argparse
 import math
-
+import random
 class Node(object):
     def __init__(self, entropy, dataPerOutcome, possible_splits):
         self.category = None
@@ -204,22 +204,44 @@ def testTree(root, input):
         for child in root.children:
             if child.subcategory == subcat:
                 temp = child
-
     while type(temp.children) == type([]):
         cat = temp.children[0].category
         for child in temp.children:
+            #if still in tree and still correct then we "recurse"
             if child.subcategory == input[cat]:
                 temp = child
-
     if temp.children != input['outcome']:
         return False
+
     return True
 
+def tenFoldCrossValidation(data):
+    accuracyList = []
+    random.shuffle(data[0])
+    for j in range(10):
+        numCorrect = 0
+        trainingSet = []
+        testSet = []
+        for i in range(len(data[0])):
+            if i % 10 == j:
+                testSet.append(data[0][i])
+            else:
+                trainingSet.append(data[0][i])
+        root = makeTree(trainingSet, data[1], data[2])
+        for valid in testSet:
+            if testTree(root, valid) == True:
+                numCorrect += 1
+        print(trainingSet)
+        print("                ")
+        print(testSet)
+        accuracyList.append(numCorrect / len(testSet))
+    return accuracyList
 
 if __name__ == '__main__':
     dataset = parse()
     data = load_dataset(dataset)
     root = makeTree(data[0], data[1], data[2])
     display(root, 0, data[2]["outcome"])
+    print(tenFoldCrossValidation(data))
     # for i in range(len(data[0])):
     #      print(i, testTree(root, data[0][i]))
