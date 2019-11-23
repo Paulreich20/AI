@@ -83,6 +83,7 @@ def getMajority(dic):
 
     return maxK
 
+
 def split(node, subcategories, emptyDataPerOutcome):
     outcome = None
     counter = 0
@@ -97,6 +98,9 @@ def split(node, subcategories, emptyDataPerOutcome):
             counter += 1
     if counter == 1:
         node.children = outcome
+        return
+    if counter == 0:
+        node.children = getMajority(node.parent.dataPerOutcome)
         return
     elif not node.possible_splits:
         node.children = getMajority(node.dataPerOutcome)
@@ -122,11 +126,13 @@ def split(node, subcategories, emptyDataPerOutcome):
     for child in node.children:
         split(child, subcategories, emptyDataPerOutcome)
 
+
 def makeEmpty(subcategories):
     emptyDataPerOutcome = {}
     for val in subcategories["outcome"]:
         emptyDataPerOutcome[val] = []
     return emptyDataPerOutcome
+
 
 def makeTree(data, categories, subcategories):
     rowPerOutcome = {}
@@ -141,12 +147,14 @@ def makeTree(data, categories, subcategories):
     split(root, subcategories, emptyDataPerOutcome)
     return root
 
+
 def parse():
     parser = argparse.ArgumentParser()
     parser.add_argument('dataset')
     #parser.add_argument('separateBy')
     args = parser.parse_args()
     return args.dataset
+
 
 def load_dataset(file):
     categories = []
@@ -172,13 +180,13 @@ def load_dataset(file):
                         if list[i] not in subcategories[categories[i]]:
                             subcategories[categories[i]].append(list[i])
                 data.append(dict)
-    categories = categories[:-1]
+    categories = categories[1:-1]
     return [data, categories, subcategories]
 
 
 def rlen(dic):
     l = 0
-    for lst in dic:
+    for lst in dic.values():
         l += len(lst)
     return l
 
@@ -204,6 +212,7 @@ def testTree(root, input):
         for child in root.children:
             if child.subcategory == subcat:
                 temp = child
+
     while type(temp.children) == type([]):
         cat = temp.children[0].category
         for child in temp.children:
@@ -212,11 +221,11 @@ def testTree(root, input):
                 temp = child
     if temp.children != input['outcome']:
         return False
-
     return True
 
 def tenFoldCrossValidation(data):
     accuracyList = []
+    print("\n++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
     random.shuffle(data[0])
     for j in range(10):
         numCorrect = 0
@@ -231,17 +240,16 @@ def tenFoldCrossValidation(data):
         for valid in testSet:
             if testTree(root, valid) == True:
                 numCorrect += 1
-        print(trainingSet)
-        print("                ")
-        print(testSet)
+
         accuracyList.append(numCorrect / len(testSet))
-    return accuracyList
+        print("Fold", j, "Accuracy:", str(round(100*numCorrect/len(testSet),2)) + "%")
+    print("Average accuracy for ten-fold validation test:", str(round(10*sum(accuracyList))) + "%")
 
 if __name__ == '__main__':
     dataset = parse()
     data = load_dataset(dataset)
     root = makeTree(data[0], data[1], data[2])
     display(root, 0, data[2]["outcome"])
-    print(tenFoldCrossValidation(data))
+    tenFoldCrossValidation(data)
     # for i in range(len(data[0])):
     #      print(i, testTree(root, data[0][i]))

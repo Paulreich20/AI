@@ -9,5 +9,7 @@ lines = f.readlines()
 f.close()
 f = open(filename, 'w')
 for line in lines:
-    f.write(line[:-2] + a[line[-2]] + '\n')
+    line = line.split(",")
+    line = ",".join(line[1:])
+    f.write(line)
 f.close()

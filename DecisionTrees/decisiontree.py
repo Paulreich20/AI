@@ -56,12 +56,18 @@ def entropy(y, n):
 
 def split(node, subcategories):
     # Base cases are if either unanimous yes/no or if you've run out of categories to split
-    if not node.dataN:
+    if (not node.dataN) and (not node.dataY):
+        node.children = 0
+        return
+    elif not node.dataN:
         node.children = 1
         return
     elif not node.dataY:
         node.children = 0
         return
+    #If we've reached a leaf and we still are not unanimious we default to majority decision. So for the titanic example,
+    # if there are two second class male children that survived and 1 second class male child that died the decision
+    # tree gives an output of surviving.
     elif len(node.possible_splits) == 0:
         if len(node.dataY) > len(node.dataN):
             node.children = 1
@@ -74,9 +80,14 @@ def split(node, subcategories):
     bestSplit = None
     for category in node.possible_splits:
         possChildren = node.makeChildren(category, subcategories)
-        if len(node.dataN) == 5 and len(node.dataY) == 9:
-            print(category + str(node.childrenEntropy(possChildren)))
-        if bestSplit is None or getGain(node, possChildren) > getGain(node, bestSplit):
+        if node.entropy == node.childrenEntropy(possChildren):
+            if len(node.dataY) > len(node.dataN):
+                bestSplit = 1
+            else:
+                bestSplit = 0
+            node.children = bestSplit
+            return
+        elif bestSplit is None or getGain(node, possChildren) > getGain(node, bestSplit):
             bestSplit = possChildren
     node.children = bestSplit
 
@@ -132,6 +143,8 @@ def load_dataset(file):
 
 
 def display(node, level):
+    #Note that if we reach a leaf whose specific combination of subcategories don't appear within the data we default to no
+    # as it was not clear what we do with this edge case.
     if node.category is None:
         for child in node.children:
             display(child, level)
