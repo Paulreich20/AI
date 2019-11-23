@@ -9,7 +9,8 @@ class Node(object):
         self.dataPerOutcome = dataPerOutcome.copy()
         self.children = {}
         self.possible_splits = possible_splits
-        self.accuracy = 0
+        self.parent = None
+
 
     def makeChildren(self, split_category, subcategories, emptyDataPerOutcome):
         children = {}
@@ -19,6 +20,7 @@ class Node(object):
             new = Node(None, makeEmpty(subcategories), newCategories)
             new.subcategory = sub
             new.category = split_category
+            new.parent = self
             children[sub] = new
 
         for lst in self.dataPerOutcome.values():
@@ -57,9 +59,9 @@ def getGain(parent, children):
 def entropy(outcomes):
     total = 0
     entropy = 0
-
     for outcome in outcomes.values():
         total += len(outcome)
+
 
     if total == 0:
         return 0
@@ -71,6 +73,15 @@ def entropy(outcomes):
             entropy += (current/total)*math.log(total/current, 2)
 
     return entropy
+
+
+def getMajority(dic):
+    maxK = None
+    for k,v in dic.items():
+        if maxK is None or len(v) > len(dic[maxK]):
+            maxK = k
+
+    return maxK
 
 def split(node, subcategories, emptyDataPerOutcome):
     outcome = None
@@ -87,11 +98,23 @@ def split(node, subcategories, emptyDataPerOutcome):
     if counter == 1:
         node.children = outcome
         return
+    elif not node.possible_splits:
+        node.children = getMajority(node.dataPerOutcome)
+        return
 
     bestSplit = None
     for category in node.possible_splits:
         possChildren = node.makeChildren(category, subcategories, emptyDataPerOutcome)
-        if bestSplit is None or getGain(node, possChildren) > getGain(node, bestSplit):
+        if node.entropy == node.childrenEntropy(possChildren):
+            bestSplit = None
+            temp = None
+            for k, v in node.dataPerOutcome.items():
+                if bestSplit is None or len(v) > len(bestSplit):
+                    temp = k
+                    bestSplit = v
+            node.children = temp
+            return
+        elif bestSplit is None or getGain(node, possChildren) > getGain(node, bestSplit):
             bestSplit = possChildren
     node.children = bestSplit
 
@@ -120,7 +143,8 @@ def makeTree(data, categories, subcategories):
 def parse():
     parser = argparse.ArgumentParser()
     parser.add_argument('dataset')
-    args= parser.parse_args()
+    #parser.add_argument('separateBy')
+    args = parser.parse_args()
     return args.dataset
 
 def load_dataset(file):
@@ -148,7 +172,7 @@ def load_dataset(file):
                         if list[i] not in subcategories[categories[i]]:
                             subcategories[categories[i]].append(list[i])
                 data.append(dict)
-    categories = categories[1:-1]
+    categories = categories[:-1]
     return [data, categories, subcategories]
 
 
@@ -198,5 +222,5 @@ if __name__ == '__main__':
     data = load_dataset(dataset)
     root = makeTree(data[0], data[1], data[2])
     display(root, 0, data[2]["outcome"])
-    for i in range(len(data[0])):
-         print(i, testTree(root, data[0][i]))
+    # for i in range(len(data[0])):
+    #      print(i, testTree(root, data[0][i]))
