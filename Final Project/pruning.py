@@ -174,21 +174,16 @@ def getNodes(root):
 def pruneTree(root, validationSet):
     T = root
     T_i = root
-    print(len(getNodes(root)))
     while type(T_i.children) is list:
         best = None
         for s in getNodes(copy.deepcopy(T_i)):
-             if type(s.children) is list:
-                if best is not None:
-                    pass
-                    #print(removalError(T_i, prune(s), validationSet),  "----------", removalError(T_i, best, validationSet))
+            if type(s.children) is list:
                 if best is None or removalError(T_i, prune(s), validationSet) < removalError(T_i, best, validationSet):
                     best = prune(copy.deepcopy(s))
 
         if error(best, validationSet) < error(T, validationSet):
             T = copy.deepcopy(best)
         T_i = best
-    print(len(getNodes(T)))
     return T
 
 
@@ -206,6 +201,7 @@ def makeTree(data, categories, subcategories):
         rowPerOutcome[outcome].append(row)
     root = Node(entropy(rowPerOutcome), rowPerOutcome, categories)
     split(root, subcategories, emptyDataPerOutcome)
+    print("Tree size:", len(getNodes(root)))
     return pruneTree(root, validationSet)
 
 
@@ -288,7 +284,9 @@ def testTree(root, input):
 
 def tenFoldCrossValidation(data):
     accuracyList = []
-    print("\n++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+    print("\n++++++++++++++++++++++++++++++++++++")
+    print("Ten-Fold Cross Validation Results")
+    print("++++++++++++++++++++++++++++++++++++")
     random.shuffle(data[0])
     for j in range(10):
         numCorrect = 0
@@ -299,13 +297,15 @@ def tenFoldCrossValidation(data):
                 testSet.append(data[0][i])
             else:
                 trainingSet.append(data[0][i])
+        print("----- Fold", j+1, "-----")
         root = makeTree(trainingSet, data[1], data[2])
+        print("Pruned tree size:", len(getNodes(root)))
         for valid in testSet:
             if testTree(root, valid) == True:
                 numCorrect += 1
 
         accuracyList.append(numCorrect / len(testSet))
-        print("Fold", j, "Accuracy:", str(round(100*numCorrect/len(testSet),2)) + "%")
+        print("Accuracy:", str(round(100*numCorrect/len(testSet),2)) + "%", "\n")
     print("Average accuracy for ten-fold validation test:", str(round(10*sum(accuracyList))) + "%")
 
 if __name__ == '__main__':
