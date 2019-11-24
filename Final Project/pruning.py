@@ -135,16 +135,16 @@ def makeEmpty(subcategories):
         emptyDataPerOutcome[val] = []
     return emptyDataPerOutcome
 
-def error(root, validationSet):
+def error(root, testSet):
     numcorrect = 0
-    for value in validationSet:
+    for value in testSet:
         if testTree(root, value):
             numcorrect += 1
 
-    return 1 - numcorrect/len(validationSet)
+    return 1 - numcorrect/len(testSet)
 
-def removalError(originalRoot, prunedRoot, validationSet):
-    err = (error(prunedRoot, validationSet)-error(originalRoot, validationSet))/(getLeaves(originalRoot)-getLeaves(prunedRoot))
+def removalError(originalRoot, prunedRoot, testSet):
+    err = (error(prunedRoot, testSet)-error(originalRoot, testSet))/(getLeaves(originalRoot)-getLeaves(prunedRoot))
     return err
 
 #AVOID PRUNING BEFORE DECIDING ON THE OPTIMAL PRUNED TREE
@@ -171,26 +171,25 @@ def getNodes(root):
     else:
         return [root]
 
-def pruneTree(root, validationSet):
+def pruneTree(root, testSet):
     T = root
     T_i = root
     while type(T_i.children) is list:
         best = None
         for s in getNodes(copy.deepcopy(T_i)):
             if type(s.children) is list:
-                if best is None or removalError(T_i, prune(s), validationSet) < removalError(T_i, best, validationSet):
+                if best is None or removalError(T_i, prune(s), testSet) < removalError(T_i, best, testSet):
                     best = prune(copy.deepcopy(s))
 
-        if error(best, validationSet) < error(T, validationSet):
+        if error(best, testSet) < error(T, testSet):
             T = copy.deepcopy(best)
         T_i = best
     return T
 
 
-def makeTree(data, categories, subcategories):
+def makeTree(data, categories, subcategories, testSet):
     random.shuffle(data)
-    trainSet = data[:int(.85*len(data))]
-    validationSet = data[int(.85*len(data)):]
+    trainSet = data
     rowPerOutcome = {}
     emptyDataPerOutcome = {}
     for val in subcategories["outcome"]:
@@ -202,7 +201,7 @@ def makeTree(data, categories, subcategories):
     root = Node(entropy(rowPerOutcome), rowPerOutcome, categories)
     split(root, subcategories, emptyDataPerOutcome)
     print("Tree size:", len(getNodes(root)))
-    return pruneTree(root, validationSet)
+    return pruneTree(root, testSet)
 
 
 def parse():
@@ -287,7 +286,6 @@ def tenFoldCrossValidation(data):
     print("\n++++++++++++++++++++++++++++++++++++")
     print("Ten-Fold Cross Validation Results")
     print("++++++++++++++++++++++++++++++++++++")
-    random.shuffle(data[0])
     for j in range(10):
         numCorrect = 0
         trainingSet = []
@@ -298,7 +296,7 @@ def tenFoldCrossValidation(data):
             else:
                 trainingSet.append(data[0][i])
         print("----- Fold", j+1, "-----")
-        root = makeTree(trainingSet, data[1], data[2])
+        root = makeTree(trainingSet, data[1], data[2], testSet)
         print("Pruned tree size:", len(getNodes(root)))
         for valid in testSet:
             if testTree(root, valid) == True:
@@ -311,6 +309,8 @@ def tenFoldCrossValidation(data):
 if __name__ == '__main__':
     dataset = parse()
     data = load_dataset(dataset)
-    root = makeTree(data[0], data[1], data[2])
+    random.shuffle(data[0])
+    root = makeTree(data[0][:int(.9*len(data[0]))], data[1], data[2], data[0][int(.9*len(data[0])):])
+    print("Pruned tree size:", len(getNodes(root)))
     display(root, 0, data[2]["outcome"])
     tenFoldCrossValidation(data)
