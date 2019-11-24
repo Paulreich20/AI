@@ -1,6 +1,8 @@
 import argparse
 import math
 import random
+import copy
+
 class Node(object):
     def __init__(self, entropy, dataPerOutcome, possible_splits):
         self.category = None
@@ -133,19 +135,72 @@ def makeEmpty(subcategories):
         emptyDataPerOutcome[val] = []
     return emptyDataPerOutcome
 
+def error(root, validationSet):
+    numcorrect = 0
+    for value in validationSet:
+        if testTree(root, value):
+            numcorrect += 1
+
+    return 1 - numcorrect/len(validationSet)
+
+def removalError(originalRoot, prunedRoot, validationSet):
+    err = (error(prunedRoot, validationSet)-error(originalRoot, validationSet))/(getLeaves(originalRoot)-getLeaves(prunedRoot))
+    return err
+
+#AVOID PRUNING BEFORE DECIDING ON THE OPTIMAL PRUNED TREE
+def prune(node):
+    node.children = getMajority(node.dataPerOutcome)
+    while node.parent is not None:
+        node = node.parent
+    return node
+
+def getLeaves(root):
+    leaves = 0
+    for node in getNodes(root):
+        if type(node.children) is not list:
+            leaves += 1
+    return leaves
+
+def getNodes(root):
+    if type(root.children) is list:
+        lst = []
+        for child in root.children:
+            lst += getNodes(child)
+        lst.append(root)
+        return lst
+    else:
+        return [root]
+
+def pruneTree(root, validationSet):
+    T = root
+    T_i = root
+    while type(T_i.children) is list:
+        best = None
+        for s in getNodes(copy.deepcopy(T_i)):
+             if type(s.children) is list:
+                if best is None or removalError(T_i, prune(s), validationSet) < removalError(T_i, best, validationSet):
+                    best = prune(s)
+        if error(best, validationSet) < error(T, validationSet):
+            T = best
+        T_i = best
+    return T
+
 
 def makeTree(data, categories, subcategories):
+    random.shuffle(data)
+    trainSet = data[:int(.7*len(data))]
+    validationSet = data[int(.7*len(data)):]
     rowPerOutcome = {}
     emptyDataPerOutcome = {}
     for val in subcategories["outcome"]:
         rowPerOutcome[val] = []
         emptyDataPerOutcome[val] = []
-    for row in data:
+    for row in trainSet:
         outcome = row["outcome"]
         rowPerOutcome[outcome].append(row)
     root = Node(entropy(rowPerOutcome), rowPerOutcome, categories)
     split(root, subcategories, emptyDataPerOutcome)
-    return root
+    return pruneTree(root, validationSet)
 
 
 def parse():
@@ -205,6 +260,9 @@ def display(node, level, outcomes):
             display(child, level +1, outcomes)
 
 def testTree(root, input):
+    if type(root.children) is not list:
+        return False
+
     if root.category is None:
         cat = root.children[0].category
         subcat = input[cat]
@@ -248,5 +306,5 @@ if __name__ == '__main__':
     dataset = parse()
     data = load_dataset(dataset)
     root = makeTree(data[0], data[1], data[2])
-    display(root, 0, data[2]["outcome"])
+    #display(root, 0, data[2]["outcome"])
     tenFoldCrossValidation(data)
