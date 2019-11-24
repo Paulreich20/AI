@@ -174,22 +174,28 @@ def getNodes(root):
 def pruneTree(root, validationSet):
     T = root
     T_i = root
+    print(len(getNodes(root)))
     while type(T_i.children) is list:
         best = None
         for s in getNodes(copy.deepcopy(T_i)):
              if type(s.children) is list:
+                if best is not None:
+                    pass
+                    #print(removalError(T_i, prune(s), validationSet),  "----------", removalError(T_i, best, validationSet))
                 if best is None or removalError(T_i, prune(s), validationSet) < removalError(T_i, best, validationSet):
-                    best = prune(s)
+                    best = prune(copy.deepcopy(s))
+
         if error(best, validationSet) < error(T, validationSet):
-            T = best
+            T = copy.deepcopy(best)
         T_i = best
+    print(len(getNodes(T)))
     return T
 
 
 def makeTree(data, categories, subcategories):
     random.shuffle(data)
-    trainSet = data[:int(.7*len(data))]
-    validationSet = data[int(.7*len(data)):]
+    trainSet = data[:int(.85*len(data))]
+    validationSet = data[int(.85*len(data)):]
     rowPerOutcome = {}
     emptyDataPerOutcome = {}
     for val in subcategories["outcome"]:
@@ -234,7 +240,7 @@ def load_dataset(file):
                         if list[i] not in subcategories[categories[i]]:
                             subcategories[categories[i]].append(list[i])
                 data.append(dict)
-    categories = categories[1:-1]
+    categories = categories[:-1]
     return [data, categories, subcategories]
 
 
@@ -306,5 +312,5 @@ if __name__ == '__main__':
     dataset = parse()
     data = load_dataset(dataset)
     root = makeTree(data[0], data[1], data[2])
-    #display(root, 0, data[2]["outcome"])
+    display(root, 0, data[2]["outcome"])
     tenFoldCrossValidation(data)

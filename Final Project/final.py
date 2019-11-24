@@ -179,7 +179,7 @@ def load_dataset(file):
                         if list[i] not in subcategories[categories[i]]:
                             subcategories[categories[i]].append(list[i])
                 data.append(dict)
-    categories = categories[1:-1]
+    categories = categories[:-1]
     return [data, categories, subcategories]
 
 
