@@ -1,10 +1,36 @@
 
 Project Overview:
+Our project is an improvement on the previously built binary decision trees based using the ID3 algorithm. We've
+added the possibility to account for any number of classes/decisiones, implemented ten-fold cross validation and
+an added file that performs cost complexity pruning on the tree, which can be summarized as follows:
+    1. Create the tree T
+    2. For all possible subtrees S of T:
+        -Prune S, calculate the error of the resulting tree, Prune(S,T).
+        -Find T_i with the smallest error where T_i = Prune(S,T)
+        -Add T_i to list
+    3. Go to 2 if T_i is not just the root
+    4. The most accurate tree in the list is the resulting pruned tree.
 
 
+To run:
+    Data files are in the same format as they were for our assignment, except values are separated by COMMAS not TABS.
+    The first row contains category names for each column, the last column is the class/decision value.
+    Non-pruning:
+        python3 final.py [data file]
 
+    Pruning:
+        python3 pruning.py [data file]
 
+    Outputs the tree using the entire input file as a training set, followed by cross-validation data.
+
+We've included two datasets found on https://archive.ics.uci.edu/ml/datasets.php:
+    -zoo.data provides an easy to understand visualization of the tree output although is too narrow to produce
+     results after pruning.
+    -cmc.data: shows significant changes during pruning.
+
+------------------------------------------
 zoo.data
+------------------------------------------
 Attribute Information:
 
 1. hair: Boolean
@@ -23,16 +49,28 @@ Attribute Information:
 14. tail: Boolean
 15. domestic: Boolean
 16. catsize: Boolean
-17. type: Categorical:
-    1 -- Mammal(41) aardvark, antelope, bear, boar, buffalo, calf, cavy, cheetah, deer, dolphin, elephant, fruitbat, giraffe, girl, goat, gorilla, hamster, hare, leopard, lion, lynx, mink, mole, mongoose, opossum, oryx, platypus, polecat, pony, porpoise, puma, pussycat, raccoon, reindeer, seal, sealion, squirrel, vampire, vole, wallaby,wolf
-    2 -- Bird(20) chicken, crow, dove, duck, flamingo, gull, hawk, kiwi, lark, ostrich, parakeet, penguin, pheasant, rhea, skimmer, skua, sparrow, swan, vulture, wren
-    3 -- Reptile(5) pitviper, seasnake, slowworm, tortoise, tuatara
-    4 -- Fish(13) bass, carp, catfish, chub, dogfish, haddock, herring, pike, piranha, seahorse, sole, stingray, tuna
-    5 -- Amphibian(4) frog, frog, newt, toad
-    6 -- Insect(8) flea, gnat, honeybee, housefly, ladybird, moth, termite, wasp
-    7 -- Invertebrate(10) clam, crab, crayfish, lobster, octopus, scorpion, seawasp, slug, starfish, worm
+17. type: Categorical (class attribute):
+    1 - Mammal(41) aardvark, antelope, bear, boar, buffalo, calf, cavy, cheetah, deer, dolphin, elephant, fruitbat,
+        giraffe, girl, goat, gorilla, hamster, hare, leopard, lion, lynx, mink, mole, mongoose, opossum, oryx, platypus,
+        polecat, pony, porpoise, puma, pussycat, raccoon, reindeer, seal, sealion, squirrel, vampire, vole, wallaby,
+        wolf
+    2 - Bird(20) chicken, crow, dove, duck, flamingo, gull, hawk, kiwi, lark, ostrich, parakeet, penguin, pheasant,
+        rhea, skimmer, skua, sparrow, swan, vulture, wren
+    3 - Reptile(5) pitviper, seasnake, slowworm, tortoise, tuatara
+    4 - Fish(13) bass, carp, catfish, chub, dogfish, haddock, herring, pike, piranha, seahorse, sole, stingray, tuna
+    5 - Amphibian(4) frog, frog, newt, toad
+    6 - Insect(8) flea, gnat, honeybee, housefly, ladybird, moth, termite, wasp
+    7 - Invertebrate(10) clam, crab, crayfish, lobster, octopus, scorpion, seawasp, slug, starfish, worm
 
+
+------------------------------------------
 cmc.data
+------------------------------------------
+This dataset is a subset of the 1987 National Indonesia Contraceptive Prevalence Survey. The samples are married women
+who were either not pregnant or do not know if they were at the time of interview. The problem is to predict the current
+contraceptive method choice (no use, long-term methods, or short-term methods) of a woman based on her demographic and
+socio-economic characteristics
+
 Attribute Information:
 
 1. Wife's age (categorical) 1=0-19, 2=20-29, 3=30-39, 4=40-49
